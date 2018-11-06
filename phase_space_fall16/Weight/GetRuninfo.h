@@ -2,6 +2,7 @@
 TString targetfile="../infiles/carbon_foil.inp";
 TString runfile="RunInfo/Run1207.dat";
 const Double_t Na=TMath::Na();
+const Double_t Qe=TMath::Qe();
 
 class Get_Runinfo
 {
@@ -97,7 +98,7 @@ class Get_Runinfo
 		     if(target=="H3")massA=3.0;
 		     if(target=="D2")massA=2.0;
                      Server->Close();
-                     Lum=target_thickness*Na/massA*Charge/1.e33;  // 1/nb
+                     Lum=target_thickness*Na/massA*Charge/(1.e33*Qe*1e6);  // 1/nb
 		     return;
 	     }	
 

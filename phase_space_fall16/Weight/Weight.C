@@ -2,7 +2,7 @@
 #include "GetRuninfo.h"
 void Weight()
 {
-     TFile *f1 = new TFile("../worksim/carbon_foil.root","update");
+     TFile *f1 = new TFile("Rootfiles/carbon_foil.root","update");
      assert(f1);
 
      TTree *t1 =(TTree*)f1->Get("h1");  
@@ -45,13 +45,14 @@ void Weight()
      t1->SetBranchAddress("elossi",&elossi);
      t1->SetBranchAddress("elossf",&elossf);
 
-     Float_t xs_born,xs_rad,xbj,Q2,W2,weight;
-     t1->Branch("xs_born",&xs_born,"xs_born/D"); //born cross section
-     t1->Branch("xs_rad",&xs_rad,"xs_rad/D"); //radiative cross section
-     t1->Branch("xbj",&xbj,"xbj/D"); //x bjokern
-     t1->Branch("Q2",&Q2,"Q2/D"); //Q2
-     t1->Branch("W2",&W2,"W2/D"); //W2
-     t1->Branch("weight",&weight,"weight/D"); //weight
+     Float_t xs_born,xs_rad,xbj,Q2,W2,nu,weight;
+     TBranch *t1_born=t1->Branch("xs_born",&xs_born,"xs_born/F"); //born cross section
+     TBranch *t1_rad=t1->Branch("xs_rad",&xs_rad,"xs_rad/F"); //radiative cross section
+     TBranch *t1_xbj=t1->Branch("xbj",&xbj,"xbj/F"); //x bjokern
+     TBranch *t1_nu=t1->Branch("nu",&nu,"nu/F"); //x bjokern
+     TBranch *t1_q2=t1->Branch("Q2",&Q2,"Q2/F"); //Q2
+     TBranch *t1_w2=t1->Branch("W2",&W2,"W2/F"); //W2
+     TBranch *t1_weight=t1->Branch("weight",&weight,"weight/F"); //weight
 
      Get_XS *xs=new Get_XS();
      xs->LoadXStable();
@@ -68,19 +69,33 @@ void Weight()
      Run->GetLum(run_number,LT,LTerr,Lum);
      cout<<Lum<<"  "<<LT<<"  "<<LTerr<<"  "<<endl;
 
+     Float_t E0=10.5901;
+     Float_t Mp=0.938272;
      Int_t nentries=t1->GetEntries();
-     for(int ii=0;ii<100;ii++){
-         xs_born=0.0; xs_rad=0.0;	 
+     for(int ii=0;ii<nentries;ii++){
          t1->GetEntry(ii);
+         xs_born=0.0; xs_rad=0.0;	 
+	 xbj=0.0;Q2=0.0;W2=0.0;nu=0.0;weight=0.0;
          if(ok_spec){
-	    cout<<theta_gen<<endl;
             xs->SearchXS(p_gen,theta_gen,xs_born,xs_rad); 	    
-            // if(xs_born==0||xs_rad==0){cout<<"Event "<<ii<<" doesn't have born XS"<<endl;continue;}
-            
+            if(xs_born==0||xs_rad==0){cout<<"Event "<<ii<<" doesn't have born XS"<<endl;continue;}
+	    Q2=4.0*E0*E_rec/1000.0*sin(theta_rec/2.0)*sin(theta_rec/2.0);
+	    nu=E0-E_rec/1000.0;
+            xbj=Q2/(2.0*Mp*nu);
+            W2=Mp*Mp+2*Mp*nu-Q2;        
+	    weight=Lum*phasespace*LT;
 	 }
+//         cout<<xbj<<" "<<Q2<<" "<<nu<<" "<<W2<<" "<<weight<<" "<<xs_born<<" "<<xs_rad<<endl;
+         t1_born->Fill();
+         t1_rad->Fill();
+         t1_xbj->Fill();
+         t1_nu->Fill();
+         t1_q2->Fill();
+         t1_w2->Fill();
+         t1_weight->Fill();
 
      }
-
-
+     t1->Write();
+     f1->Close();
 
 }

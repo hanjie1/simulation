@@ -1,7 +1,7 @@
 #include <TMath.h>
 const Double_t pi=TMath::Pi();
 const int nTh=51;
-const int nEp=51;
+const int nEp=68;
 const Float_t delth=0.1;
 const Float_t delep=0.005;
 TString filename="XStable/Bodek/Carbon_kin1_xs.out";
@@ -37,7 +37,7 @@ class Get_XS
           	 XSborn_Table[nn][mm]=atof(content.Data());
           	 tmp.Tokenize(content,from," ");
          	 XSrad_Table[nn][mm]=atof(content.Data());
-          	 if((mm+1)%51==0){
+          	 if((mm+1)%nTh==0){
 		     mm=0;
 		     nn++;
 		 }
@@ -49,7 +49,7 @@ class Get_XS
      	   infile.close();
       }
 
-      void SearchXS(Float_t Ep, Float_t aTheta, Float_t born, Float_t crad){
+      void SearchXS(Float_t Ep, Float_t aTheta, Float_t &born, Float_t &crad){
            Double_t th=aTheta*180.0/pi;
            int nfound=0;
 	   int bbp=0,bbTh=0;
