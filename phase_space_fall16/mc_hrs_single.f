@@ -58,7 +58,8 @@ C Event limits, topdrawer limits, physics quantities
 
 	real*8 cut_dpp,cut_dth,cut_dph,cut_z	!cuts on reconstructed quantities
 	real*8 xoff,yoff,zoff                   !Beam offsets (z target offset)
-	real*8 spec_xoff,spec_yoff,spec_zoff    !Spectrometer offsets
+	real*8 spec_xoff,spec_yoff,spec_zoff    !Spectrometer offsets in transport coor
+	real*8 spec_lxoff,spec_lyoff,spec_lzoff !Spectrometer offsets in LAB coordinates
 	real*8 spec_xpoff, spec_ypoff           !Spectrometer angle offsets
 	real*8 cos_ts,sin_ts			!cos and sin of spectrometer angle
 	real*8 th_ev,cos_ev,sin_ev		!cos and sin of event angle
@@ -344,17 +345,17 @@ c	read (chanin,1001) str_line
 ! Spectrometer offsets
 	read (chanin, 1001) str_line
 	write(6,*) str_line(1:last_char(str_line))
-	iss = rd_real(str_line,spec_xoff)
+	iss = rd_real(str_line,spec_lxoff)
 	if(.not.iss) stop 'ERROR (spect. xoff) in setup!'
 
 	read (chanin, 1001) str_line
 	write(6,*) str_line(1:last_char(str_line))
-	iss = rd_real(str_line,spec_yoff)
+	iss = rd_real(str_line,spec_lyoff)
 	if(.not.iss) stop 'ERROR (spect. yoff) in setup!'
 
 	read (chanin, 1001) str_line
 	write(6,*) str_line(1:last_char(str_line))
-	iss = rd_real(str_line,spec_zoff)
+	iss = rd_real(str_line,spec_lzoff)
 	if(.not.iss) stop 'ERROR (spect. zoff) in setup!'
 
 	read (chanin, 1001) str_line
@@ -556,6 +557,16 @@ C DJG Apply spectrometer offsets
 C DJG If the spectrometer if too low (positive x offset) a particle
 C DJG at "x=0" will appear in the spectrometer to be a little high
 C DJG so we should subtract the offset
+          if(use_left_arm) then
+             spec_xoff = -spec_lyoff
+             spec_yoff = spec_lxoff * cos_ts - spec_lzoff * sin_ts
+             spec_zoff = spec_lzoff * cos_ts + spec_lxoff * sin_ts
+          else
+             spec_xoff = -spec_lyoff
+             spec_yoff = spec_lxoff * cos_ts + spec_lzoff * sin_ts
+             spec_zoff = spec_lzoff * cos_ts - spec_lxoff * sin_ts
+          endif
+
 	  xs = xs - spec_xoff
 	  ys = ys - spec_yoff
 	  zs = zs - spec_zoff

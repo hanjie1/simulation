@@ -2,7 +2,7 @@
 #include "GetRuninfo.h"
 void Weight()
 {
-     TFile *f1 = new TFile("Rootfiles/carbon_foil.root","update");
+     TFile *f1 = new TFile("Rootfiles/carbon_foil_nooffset_f1f217.root","update");
      assert(f1);
 
      TTree *t1 =(TTree*)f1->Get("h1");  

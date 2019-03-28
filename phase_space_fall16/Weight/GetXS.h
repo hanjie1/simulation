@@ -4,7 +4,7 @@ const int nTh=51;
 const int nEp=68;
 const Float_t delth=0.1;
 const Float_t delep=0.005;
-TString filename="XStable/Bodek/Carbon_kin1_xs.out";
+TString filename="XStable/f1f217/Carbon_kin1_xs.out";
 
 class Get_XS
 {
