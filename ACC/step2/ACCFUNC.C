@@ -8,20 +8,20 @@
 #define NUmax 7.62
 #define E0 10.589
 #define Mp 0.938272 
+#define nBin 25
 void ACCFUNC()
 {
      bool OUTINP=false;
      bool OUTYield=true;
 
-     Double_t xbin[36];
-     Int_t nBin=36;
+     Double_t xbin[nBin];
      Double_t dBin=0.03;
      for(int ii=0;ii<nBin;ii++){
          xbin[ii]=0.15+ii*dBin;
      }
 
-     Double_t XD2[36]={0.0},Q2_D2[36]={0.0},D2_Yield[36]={0.0};    
-     Double_t XHe3[36]={0.0},Q2_He3[36]={0.0},He3_Yield[36]={0.0};    
+     Double_t XD2[nBin]={0.0},Q2_D2[nBin]={0.0},D2_Yield[nBin]={0.0};    
+     Double_t XHe3[nBin]={0.0},Q2_He3[nBin]={0.0},He3_Yield[nBin]={0.0};    
  
      Double_t theta[nTH]={0.0},nu[nNU]={0.0};
      for(int ii=0;ii<nTH;ii++)
@@ -141,12 +141,14 @@ void ACCFUNC()
 
 	   for(int kk=0;kk<nBin;kk++){
 	      if((tmp_x-xbin[kk])<dBin && (tmp_x-xbin[kk])>=0){
-		 XD2[kk]=XD2[kk]+tmp_x*D2_weight*D2_rad; 
-		 XHe3[kk]=XHe3[kk]+tmp_x*He3_weight*He3_rad; 
-		 Q2_D2[kk]=Q2_D2[kk]+tmp_Q2*D2_weight*D2_rad; 
-		 Q2_He3[kk]=Q2_He3[kk]+tmp_Q2*He3_weight*He3_rad; 
-		 D2_Yield[kk]+=D2_weight*D2_rad;
-		 He3_Yield[kk]+=He3_weight*He3_rad;
+		 Double_t tmp_ND2=1.0/30.0;
+		 Double_t tmp_NHe3=1.0/30.0;
+		 XD2[kk]=XD2[kk]+tmp_x*D2_weight*D2_rad*tmp_ND2; 
+		 XHe3[kk]=XHe3[kk]+tmp_x*He3_weight*He3_rad*tmp_NHe3; 
+		 Q2_D2[kk]=Q2_D2[kk]+tmp_Q2*D2_weight*D2_rad*tmp_ND2; 
+		 Q2_He3[kk]=Q2_He3[kk]+tmp_Q2*He3_weight*He3_rad*tmp_NHe3; 
+		 D2_Yield[kk]+=D2_weight*D2_rad*tmp_ND2;
+		 He3_Yield[kk]+=He3_weight*He3_rad*tmp_NHe3;
 		 break;
 	      }
 	   }
@@ -163,7 +165,7 @@ void ACCFUNC()
      infile2.close();
      if(OUTINP)file.close();
 
-     TGraph *gRatio=new TGraph();    
+     TGraphErrors *gRatio=new TGraphErrors();    
      TGraph *gRatio_data=new TGraph();    
      TGraph *gRatio_diff=new TGraph();    
 
@@ -182,7 +184,9 @@ void ACCFUNC()
 	 Double_t Q2avg_D2=Q2_D2[ii]/D2_Yield[ii];
 	 Double_t Q2avg_He3=Q2_He3[ii]/He3_Yield[ii];
 	 Double_t ratio=He3_Yield[ii]/D2_Yield[ii];
+	 Double_t err=ratio*sqrt(1.0/D2_Yield[ii]+1.0/He3_Yield[ii]);
  	 gRatio->SetPoint(ii,xavg_D2,ratio);
+ 	 gRatio->SetPointError(ii,0,err);
          gRatio_data->SetPoint(mm,xavg_D2,He3_data[mm]/D2_data[mm]);
          gRatio_diff->SetPoint(mm,xavg_D2,(He3_data[mm]/D2_data[mm]-ratio)/ratio);
 	 mm++;
